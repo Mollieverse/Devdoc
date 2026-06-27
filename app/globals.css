@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html, body {
+  height: 100%;
+}
+
+/* Shiki output: strip the theme's background so the wrapping card controls it,
+   and let our padding handle spacing instead of <pre>'s default margin. */
+.shiki-host pre.shiki {
+  background-color: transparent !important;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.shiki-host code {
+  font-family: inherit;
+}
