@@ -245,6 +245,8 @@ function ResultCard({
 
       <p className="text-sm leading-6 text-zinc-400">{result.context}</p>
 
+      {result.sources.length > 0 && <Sources sources={result.sources} />}
+
       {result.tags.length > 0 && (
         <ul className="flex flex-wrap gap-1.5">
           {result.tags.map((tag) => (
@@ -257,6 +259,56 @@ function ResultCard({
           ))}
         </ul>
       )}
+    </section>
+  );
+}
+
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
+
+function Sources({ sources }: { sources: { url: string; title: string }[] }) {
+  return (
+    <section className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+      <span className="font-mono text-xs uppercase tracking-wider text-zinc-500">
+        sources · what real devs said
+      </span>
+      <ul className="flex flex-col">
+        {sources.map((s) => (
+          <li key={s.url}>
+            <a
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group/src flex items-baseline gap-3 rounded-md px-2 py-1.5 transition hover:bg-white/[0.04]"
+            >
+              <span className="inline-flex shrink-0 items-center rounded border border-white/10 bg-white/[0.03] px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+                {hostOf(s.url)}
+              </span>
+              <span className="truncate text-sm text-zinc-300 group-hover/src:text-zinc-100">
+                {s.title}
+              </span>
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                className="ml-auto h-3.5 w-3.5 shrink-0 text-zinc-600 group-hover/src:text-zinc-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M7 17 17 7" />
+                <path d="M7 7h10v10" />
+              </svg>
+            </a>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
