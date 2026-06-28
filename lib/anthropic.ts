@@ -78,6 +78,7 @@ export async function generateSnippet(query: string): Promise<ClaudeResult> {
       {
         type: 'web_search_20260209',
         name: 'web_search',
+        allowed_callers: ['direct'],
         allowed_domains: ALLOWED_DOMAINS,
         max_uses: 3,
       },
