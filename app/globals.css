@@ -3,21 +3,72 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-surface: #0a0a0b;
+  --color-surface-2: #111113;
+  --color-surface-3: #16161a;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.14);
+  --color-text: #ededed;
+  --color-text-muted: #8a8a93;
+  --color-text-subtle: #5d5d66;
+  --color-accent: #34d399;
 }
 
 html, body {
   height: 100%;
+  background: var(--color-surface);
+  color: var(--color-text);
+  color-scheme: dark;
 }
 
-/* Shiki output: strip the theme's background so the wrapping card controls it,
-   and let our padding handle spacing instead of <pre>'s default margin. */
+body {
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle grid background — the "Linear look", monochrome, very faint. */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+}
+
+/* Radial spotlight that fades the grid out toward the edges. */
+.bg-grid-mask {
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+}
+
+/* Shiki output: strip the theme's background so the wrapping card controls it. */
 .shiki-host pre.shiki {
   background-color: transparent !important;
   margin: 0;
   padding: 0;
   font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
 }
 
 .shiki-host code {
   font-family: inherit;
+}
+
+/* kbd visual */
+kbd.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-3);
+  color: var(--color-text-muted);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1;
 }
