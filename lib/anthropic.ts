@@ -2,19 +2,22 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic();
 
+// Stack Overflow and Reddit are *intentionally omitted* — both sites block
+// Anthropic's web crawler, so including them makes the whole request fail.
+// See: https://support.anthropic.com/en/articles/8896518
 const ALLOWED_DOMAINS = [
-  'stackoverflow.com',
-  'reddit.com',
   'github.com',
   'dev.to',
   'developer.mozilla.org',
+  'news.ycombinator.com',
+  'freecodecamp.org',
 ];
 
 const SYSTEM_PROMPT = `You are DevDoc, a developer quick-reference engine.
 
 Your job: given a developer's question — a programming task, an error message, a setup step, or a "how do I X in language Y" — search the public web for what real developers actually say works, then return the smallest correct code snippet that answers it.
 
-ALWAYS use the web_search tool first. Search for the user's question on Stack Overflow, Reddit, GitHub, dev.to, and MDN. Read what the community has converged on. Then synthesize the best answer from those sources.
+ALWAYS use the web_search tool first. Prefer GitHub issues/discussions, MDN, dev.to articles, Hacker News threads, and freeCodeCamp tutorials. Read what the community has converged on. Then synthesize the best answer from those sources.
 
 Return a JSON object:
 - snippet: the raw code or command. No markdown fences. No leading/trailing whitespace. No commentary inside the code.

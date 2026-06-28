@@ -2,7 +2,7 @@
 
 > Code answers, instantly.
 
-A minimalist developer reference. Type a bug, an error, or a how-to — get back the smallest correct snippet that the community has actually converged on. Every answer cites the Stack Overflow / Reddit / GitHub threads it came from, so you can verify before you copy. Cached in Postgres so the second hit on the same question is instant and free.
+A minimalist developer reference. Type a bug, an error, or a how-to — get back the smallest correct snippet that the community has actually converged on. Every answer cites the GitHub issues, MDN pages, dev.to articles, and HN threads it came from, so you can verify before you copy. Cached in Postgres so the second hit on the same question is instant and free.
 
 No Stack Overflow tabs. No 14-paragraph blog posts. Just the code, sourced from what real devs say works.
 
@@ -12,7 +12,7 @@ No Stack Overflow tabs. No 14-paragraph blog posts. Just the code, sourced from 
 
 - **Next.js 16** (App Router, React 19, Server Components)
 - **Tailwind v4** for styling
-- **Anthropic Claude Haiku 4.5** + **`web_search` tool** restricted to `stackoverflow.com`, `reddit.com`, `github.com`, `dev.to`, `developer.mozilla.org`
+- **Anthropic Claude Haiku 4.5** + **`web_search` tool** restricted to `github.com`, `developer.mozilla.org`, `dev.to`, `news.ycombinator.com`, `freecodecamp.org`
 - **Structured output** via `output_config.format` json_schema (`{ snippet, language, tags, context, sources }`)
 - **Neon Postgres** (via `@vercel/postgres`) for query caching, including cited sources
 - **Shiki** (`github-dark-dimmed`) for server-rendered syntax highlighting
@@ -24,7 +24,7 @@ query  →  normalize  →  cache lookup  ──hit──→ serve cached + sour
                               │                                          │
                               └──miss──→ Claude + web_search             │
                                               │                          │
-                                        searches SO / Reddit / GH        │
+                                        searches GH / MDN / dev.to       │
                                               │                          │
                                         synthesizes answer + sources ──→ ┴─→ render
                                               │
@@ -35,6 +35,10 @@ Two things make this different from "yet another ChatGPT wrapper":
 
 1. **The model is grounded.** It searches the real web (restricted to dev-trusted domains) before answering, so answers reflect current community consensus rather than 2024 training data.
 2. **Sources are first-class.** Every snippet ships with the 1–4 threads it was built from. The UI renders them as clickable citations directly under the code.
+
+### Why not Stack Overflow / Reddit?
+
+Both sites have explicitly blocked Anthropic's web crawler ([their support article](https://support.anthropic.com/en/articles/8896518)). Listing them in `allowed_domains` makes every request fail before search even runs. For now we route around them via GitHub discussions/issues, MDN, dev.to, HN, and freeCodeCamp — all of which have rich dev consensus. A future upgrade can hit Stack Exchange's public API and Reddit's JSON endpoints in a separate fetch step to merge the canonical sources back in.
 
 ## Setup
 
