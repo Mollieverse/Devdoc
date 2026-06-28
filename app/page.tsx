@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import SearchForm from '@/components/SearchForm';
 import CopyButton from '@/components/CopyButton';
 import { getOrGenerateSnippet } from '@/lib/search';
@@ -40,32 +41,7 @@ export default async function Home({
   const raw = params.q;
   const query = typeof raw === 'string' ? raw.trim() : '';
 
-  let result: SnippetResult | null = null;
-  let errorMessage: string | null = null;
-
-  if (query) {
-    try {
-      result = await getOrGenerateSnippet(query);
-    } catch (e) {
-      console.error('snippet generation failed:', e);
-      errorMessage =
-        e instanceof Error ? e.message : 'Something went wrong generating a snippet.';
-    }
-  }
-
-  const highlightedHtml = result ? await highlight(result.snippet, result.language) : null;
-
-  if (query) {
-    return (
-      <ResultView
-        query={query}
-        result={result}
-        highlightedHtml={highlightedHtml}
-        errorMessage={errorMessage}
-      />
-    );
-  }
-
+  if (query) return <ResultView query={query} />;
   return <LandingView />;
 }
 
@@ -162,17 +138,7 @@ function LandingView() {
   );
 }
 
-function ResultView({
-  query,
-  result,
-  highlightedHtml,
-  errorMessage,
-}: {
-  query: string;
-  result: SnippetResult | null;
-  highlightedHtml: string | null;
-  errorMessage: string | null;
-}) {
+function ResultView({ query }: { query: string }) {
   return (
     <div className="flex flex-1 flex-col">
       <Nav />
@@ -180,15 +146,80 @@ function ResultView({
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-10">
         <SearchForm initialQuery={query} variant="compact" />
 
-        {errorMessage && <ErrorState message={errorMessage} query={query} />}
-
-        {result && highlightedHtml && (
-          <ResultCard result={result} highlightedHtml={highlightedHtml} />
-        )}
+        {/* The shell above (nav + search + footer) renders instantly.
+            Everything inside this Suspense boundary streams in when Claude finishes. */}
+        <Suspense key={query} fallback={<ResultSkeleton />}>
+          <ResultStream query={query} />
+        </Suspense>
       </main>
 
       <Footer />
     </div>
+  );
+}
+
+async function ResultStream({ query }: { query: string }) {
+  let result: SnippetResult | null = null;
+  let errorMessage: string | null = null;
+
+  try {
+    result = await getOrGenerateSnippet(query);
+  } catch (e) {
+    console.error('snippet generation failed:', e);
+    errorMessage =
+      e instanceof Error ? e.message : 'Something went wrong generating a snippet.';
+  }
+
+  if (errorMessage) return <ErrorState message={errorMessage} query={query} />;
+  if (!result) return null;
+
+  const highlightedHtml = await highlight(result.snippet, result.language);
+  return <ResultCard result={result} highlightedHtml={highlightedHtml} />;
+}
+
+function ResultSkeleton() {
+  return (
+    <section className="flex flex-col gap-4" aria-busy="true" aria-label="Generating answer">
+      <header className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-16 animate-pulse rounded-md bg-white/[0.06]" />
+        </div>
+        <SearchingStatus />
+      </header>
+
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#1b1f24]">
+        <div className="flex flex-col gap-2.5 p-5">
+          <div className="h-3 w-[78%] animate-pulse rounded bg-white/[0.06]" style={{ animationDelay: '0ms' }} />
+          <div className="h-3 w-[64%] animate-pulse rounded bg-white/[0.06]" style={{ animationDelay: '120ms' }} />
+          <div className="h-3 w-[88%] animate-pulse rounded bg-white/[0.06]" style={{ animationDelay: '240ms' }} />
+          <div className="h-3 w-[52%] animate-pulse rounded bg-white/[0.06]" style={{ animationDelay: '360ms' }} />
+          <div className="h-3 w-[72%] animate-pulse rounded bg-white/[0.06]" style={{ animationDelay: '480ms' }} />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <div className="h-3 w-[90%] animate-pulse rounded bg-white/[0.04]" />
+        <div className="h-3 w-[60%] animate-pulse rounded bg-white/[0.04]" />
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+        <div className="h-2.5 w-32 animate-pulse rounded bg-white/[0.05]" />
+        <div className="h-4 w-[70%] animate-pulse rounded bg-white/[0.04]" />
+        <div className="h-4 w-[55%] animate-pulse rounded bg-white/[0.04]" />
+      </div>
+    </section>
+  );
+}
+
+function SearchingStatus() {
+  return (
+    <span className="inline-flex items-center gap-2 text-xs text-zinc-500">
+      <span className="relative flex h-1.5 w-1.5">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+      </span>
+      searching the web…
+    </span>
   );
 }
 

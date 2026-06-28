@@ -83,7 +83,7 @@ export async function generateSnippet(query: string): Promise<ClaudeResult> {
         name: 'web_search',
         allowed_callers: ['direct'],
         allowed_domains: ALLOWED_DOMAINS,
-        max_uses: 3,
+        max_uses: 2,
       },
     ],
     output_config: {
